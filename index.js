@@ -1,13 +1,38 @@
-// https://dribbble.com/shots/19113627-Weather-Dashboard
-// https://www.google.com/search?client=firefox-b-d&q=weather+runbi
+// UI Ex https://dribbble.com/shots/19113627-Weather-Dashboard
+// UI Ex https://www.google.com/search?client=firefox-b-d&q=weather+runbi
+// API url https://opendata.smhi.se/apidocs/metfcst/parameters.html
 
-
+//TODO add wind direction
 // url data
-let lat = 59.8;
-let lon = 18.3;
-let requestTime = 18;
+let rqLat = 59.8;
+let rqLon = 18.3;
+let rqTime = 18;
+
+const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 
+function setButtons() {
+    const d = new Date();
+    let startDay = weekday[d.getDay()];
+
+    let indexOfStartDay = weekday.findIndex(item => item === startDay);
+
+    // Replace the button texts with correct days
+    for ( let buttonNr = 0; buttonNr < 7; buttonNr++ ) {
+        let button = document.getElementById(`day-${buttonNr}`);
+        button.textContent += weekday[indexOfStartDay];
+        console.log(indexOfStartDay);
+
+        indexOfStartDay = (indexOfStartDay >= weekday.length - 1) ? 0 : (indexOfStartDay + 1);
+
+        button.addEventListener("click", () => {
+            console.log(buttonNr);
+        });
+    }
+}
+
+
+// Formats time to DD-MM-YYYYThh:00:00
 function formatTime() {
     const date = new Date();
 
@@ -15,22 +40,18 @@ function formatTime() {
     let requestMonth = date.getMonth() + 1 <= 9 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
     let requestYear = date.getFullYear();
 
-    let formattedDateTime = `${requestYear}-${requestMonth}-${requestDay}T${requestTime}:00:00Z`;
-    console.log(formattedDateTime);
+    let formattedDateTime = `${requestYear}-${requestMonth}-${requestDay}T${rqTime}:00:00Z`;
 
     return formattedDateTime;
 }
 
 
-// url
-let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${lon}/lat/${lat}/data.json`;
-
-
-async function fetchData() {
+// Fetches api data
+async function fetchData(apiUrl) {
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        console.log('Success fetching data.');
+        //console.log('Success fetching data.');
         return data;
     } 
     catch (error) {
@@ -40,15 +61,18 @@ async function fetchData() {
 }
 
 
-async function fetchAndProcessData() {
+// Fetches and processes api data
+async function fetchAndProcessData( date, time = rqTime, place = (rqLat, rqLon) ) {
     try {
         // Set the "Date Time Place" text here before fetching the data
         const date = new Date();
-        const options = { hour12: false, hour: '2-digit', minute: '2-digit' };
-        const dateTimePlace = `${date.toLocaleDateString()} | ${requestTime}:00 | ${lat}°N, ${lon}°N`; // Modify "Place" with the actual location
+        const dateTimePlace = `${date.toLocaleDateString()} | ${rqTime}:00 | ${rqLat}°N, ${rqLon}°N`;
         document.getElementById('dateTimePlace').textContent = dateTimePlace;
 
-        let urlData = await fetchData(); 
+        // url
+        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${rqLon}/lat/${rqLat}/data.json`;
+
+        let urlData = await fetchData(apiUrl); 
         let validTime = formatTime();
 
         // Fectch data
@@ -74,7 +98,7 @@ async function fetchAndProcessData() {
 
                         // Save if found matching name
                         if (data.parameters[dataParameter].name == dataParameterNameArray[parameterName]) {
-                            console.log(dataParameterNameArray[parameterName] + " " + data.parameters[dataParameter].values[0] + " " + data.parameters[dataParameter].unit);
+                            //console.log(dataParameterNameArray[parameterName] + " " + data.parameters[dataParameter].values[0] + " " + data.parameters[dataParameter].unit);
                             const parameterValue = data.parameters[dataParameter].values[0];
                             const parameterUnit = data.parameters[dataParameter].unit;
                             const parameterCellId = dataParameterNameArray[parameterName];
@@ -84,6 +108,7 @@ async function fetchAndProcessData() {
                         }
 
                     }
+                    
                     
 
                 }
@@ -105,5 +130,6 @@ async function fetchAndProcessData() {
     }
 }
 
+setButtons();
 
 fetchAndProcessData();
