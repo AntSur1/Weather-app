@@ -1,19 +1,27 @@
 // UI Ex https://dribbble.com/shots/19113627-Weather-Dashboard
 // UI Ex https://www.google.com/search?client=firefox-b-d&q=weather+runbi
 // API url https://opendata.smhi.se/apidocs/metfcst/parameters.html
+// TODO Set buttons to look for different hours
 
-//TODO add wind direction
+
 // url data
-let rqLat = 59.8;
-let rqLon = 18.3;
+let rqDate;
 let rqTime = 18;
+let rqLon = 18.3;
+let rqLat = 59.8;
+let rqPlace = [rqLon, rqLat]
+
+const dateToday = new Date(); 
+let dateObj = new Date(); 
+
+//rqTime = (dateObj.getHours() + 1) % 24;
+rqDate = dateObj.toLocaleDateString();
 
 const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 
 function setButtons() {
-    const d = new Date();
-    let startDay = weekday[d.getDay()];
+    let startDay = weekday[dateObj.getDay()];
 
     let indexOfStartDay = weekday.findIndex(item => item === startDay);
 
@@ -21,28 +29,17 @@ function setButtons() {
     for ( let buttonNr = 0; buttonNr < 7; buttonNr++ ) {
         let button = document.getElementById(`day-${buttonNr}`);
         button.textContent += weekday[indexOfStartDay];
-        console.log(indexOfStartDay);
 
-        indexOfStartDay = (indexOfStartDay >= weekday.length - 1) ? 0 : (indexOfStartDay + 1);
+        indexOfStartDay = (indexOfStartDay + 1) % weekday.length;
 
         button.addEventListener("click", () => {
-            console.log(buttonNr);
+            
+            dateObj.setDate(dateToday.getDate() + buttonNr);
+            rqDate = dateObj.toLocaleDateString();
+            
+            fetchAndProcessData( rqDate, rqTime, rqPlace );
         });
     }
-}
-
-
-// Formats time to DD-MM-YYYYThh:00:00
-function formatTime() {
-    const date = new Date();
-
-    let requestDay = date.getDate() <= 9 ? `0${date.getDate()}` : date.getDate();
-    let requestMonth = date.getMonth() + 1 <= 9 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
-    let requestYear = date.getFullYear();
-
-    let formattedDateTime = `${requestYear}-${requestMonth}-${requestDay}T${rqTime}:00:00Z`;
-
-    return formattedDateTime;
 }
 
 
@@ -61,27 +58,40 @@ async function fetchData(apiUrl) {
 }
 
 
+// Formats current time to DD-MM-YYYYThh:00:00
+function formatTime() {
+    let requestDay = dateObj.getDate() <= 9 ? `0${dateObj.getDate()}` : dateObj.getDate();
+    let requestMonth = dateObj.getMonth() + 1 <= 9 ? `0${dateObj.getMonth() + 1}` : dateObj.getMonth() + 1;
+    let requestYear = dateObj.getFullYear();
+
+    let formattedDateTime = `${requestYear}-${requestMonth}-${requestDay}T${rqTime}:00:00Z`;
+
+    return formattedDateTime;
+}
+
+
 // Fetches and processes api data
-async function fetchAndProcessData( date, time = rqTime, place = (rqLat, rqLon) ) {
+async function fetchAndProcessData( date, time, place ) {
     try {
         // Set the "Date Time Place" text here before fetching the data
-        const date = new Date();
-        const dateTimePlace = `${date.toLocaleDateString()} | ${rqTime}:00 | ${rqLat}°N, ${rqLon}°N`;
+        let dateTimePlace = `${date} | ${time}:00 | ${place[0]}°N, ${place[1]}°N`;
         document.getElementById('dateTimePlace').textContent = dateTimePlace;
 
         // url
-        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${rqLon}/lat/${rqLat}/data.json`;
+        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${place[0]}/lat/${place[1]}/data.json`;
 
         let urlData = await fetchData(apiUrl); 
         let validTime = formatTime();
+        console.log(validTime);
+        console.error(urlData.timeSeries);
 
         // Fectch data
         for (let i = 0; i < urlData.timeSeries.length; i++) {
 
             // Find validTime data (right day and time)
             if (urlData.timeSeries[i].validTime == validTime) {
-                const data = urlData.timeSeries[i];
-                console.log(data);
+                let data = urlData.timeSeries[i];
+                //console.log(data);
 
                 // Find data parameters
                 let dataParameterNameArray = [
@@ -89,7 +99,8 @@ async function fetchAndProcessData( date, time = rqTime, place = (rqLat, rqLon) 
                     "t",
                     "pmedian",
                     "r",
-                    "ws"]
+                    "ws",
+                    "wd"]
 
                 for (let dataParameter = 0; dataParameter < data.parameters.length; dataParameter++) {
 
@@ -99,18 +110,14 @@ async function fetchAndProcessData( date, time = rqTime, place = (rqLat, rqLon) 
                         // Save if found matching name
                         if (data.parameters[dataParameter].name == dataParameterNameArray[parameterName]) {
                             //console.log(dataParameterNameArray[parameterName] + " " + data.parameters[dataParameter].values[0] + " " + data.parameters[dataParameter].unit);
-                            const parameterValue = data.parameters[dataParameter].values[0];
-                            const parameterUnit = data.parameters[dataParameter].unit;
-                            const parameterCellId = dataParameterNameArray[parameterName];
+                            let parameterValue = data.parameters[dataParameter].values[0];
+                            let parameterUnit = data.parameters[dataParameter].unit;
+                            let parameterCellId = dataParameterNameArray[parameterName];
                   
                             // Update the corresponding table cell with the fetched data
                             document.getElementById(parameterCellId).textContent = parameterValue + " " + parameterUnit;
                         }
-
                     }
-                    
-                    
-
                 }
 
 
@@ -132,4 +139,4 @@ async function fetchAndProcessData( date, time = rqTime, place = (rqLat, rqLon) 
 
 setButtons();
 
-fetchAndProcessData();
+fetchAndProcessData( rqDate, rqTime, rqPlace );
