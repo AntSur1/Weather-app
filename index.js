@@ -14,7 +14,7 @@ let rqPlace = [rqLon, rqLat]
 const dateToday = new Date(); 
 let dateObj = new Date(); 
 
-//rqTime = (dateObj.getHours() + 1) % 24;
+rqTime == undefined ? (dateObj.getHours() + 1) % 24 : rqTime;
 rqDate = dateObj.toLocaleDateString();
 
 const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
