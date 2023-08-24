@@ -83,7 +83,83 @@ async function fetchAndProcessData( date, time, place ) {
         let urlData = await fetchData(apiUrl); 
         let validTime = formatTime();
         console.log(validTime);
-        console.error(urlData.timeSeries);
+        console.log(urlData);
+
+        const tableBody = document.getElementById("weatherTable");
+
+        // Fectch data
+        for (let i = 0; i < urlData.timeSeries.length; i++) {
+            
+            let data = urlData.timeSeries[i];
+
+            const newRow = document.createElement("tr");
+            const newCell = document.createElement("td");
+            newCell.textContent = data["validTime"];
+
+            newRow.appendChild(newCell);
+
+            
+            //START
+            //START
+
+            //console.log(data);
+
+            // Find data parameters
+            let dataParameterNameArray = [
+                "Wsymb2",
+                "t",
+                "pmedian",
+                "r",
+                "ws",
+                "wd"]
+
+            for (let dataParameter = 0; dataParameter < data.parameters.length; dataParameter++) {
+
+                // Compare the parameter name to array
+                for (let parameterName = 0; parameterName < dataParameterNameArray.length; parameterName++) {
+
+                    // Save if found matching name
+                    if (data.parameters[dataParameter].name == dataParameterNameArray[parameterName]) {
+                        //console.log(dataParameterNameArray[parameterName] + " " + data.parameters[dataParameter].values[0] + " " + data.parameters[dataParameter].unit);
+                        let parameterValue = data.parameters[dataParameter].values[0];
+                        let parameterUnit = data.parameters[dataParameter].unit;
+                        let parameterCellClass = dataParameterNameArray[parameterName];
+                        
+                        // TODO Do this for each of the parameters above
+                        // Update the corresponding table cell with the fetched data
+                        
+                    }
+                }
+            }
+            // Add new row
+            tableBody.appendChild(newRow);
+
+            //STOP
+            //STOP
+
+            
+        }
+
+    } 
+    catch (error) {
+        
+        console.error('Error with Promise:', error);
+    }
+}
+
+async function fetchAndProcessData1( date, time, place ) {
+    try {
+        // Set the "Date Time Place" text here before fetching the data
+        let dateTimePlace = `${date} | ${time}:00 | ${place[0]}°N, ${place[1]}°N`;
+        document.getElementById('dateTimePlace').textContent = dateTimePlace;
+
+        // url
+        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${place[0]}/lat/${place[1]}/data.json`;
+
+        let urlData = await fetchData(apiUrl); 
+        let validTime = formatTime();
+        console.log(validTime);
+        console.log(urlData);
 
         // Fectch data
         for (let i = 0; i < urlData.timeSeries.length; i++) {
@@ -112,10 +188,10 @@ async function fetchAndProcessData( date, time, place ) {
                             //console.log(dataParameterNameArray[parameterName] + " " + data.parameters[dataParameter].values[0] + " " + data.parameters[dataParameter].unit);
                             let parameterValue = data.parameters[dataParameter].values[0];
                             let parameterUnit = data.parameters[dataParameter].unit;
-                            let parameterCellId = dataParameterNameArray[parameterName];
+                            let parameterCellClass = dataParameterNameArray[parameterName];
                   
                             // Update the corresponding table cell with the fetched data
-                            document.getElementById(parameterCellId).textContent = parameterValue + " " + parameterUnit;
+                            document.getElementById(parameterCellClass).textContent = parameterValue + " " + parameterUnit;
                         }
                     }
                 }
