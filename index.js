@@ -88,15 +88,12 @@ async function fetchAndProcessData( date, time, place ) {
         const tableBody = document.getElementById("weatherTable");
 
         // Fectch data
-        for (let i = 0; i < urlData.timeSeries.length; i++) {
+        for (let timeSerie = 0; timeSerie < urlData.timeSeries.length; timeSerie++) {
             
-            let data = urlData.timeSeries[i];
+            let data = urlData.timeSeries[timeSerie];
+            console.log(data);
 
             const newRow = document.createElement("tr");
-            const newCell = document.createElement("td");
-            newCell.textContent = data["validTime"];
-
-            newRow.appendChild(newCell);
 
             
             //START
@@ -105,32 +102,34 @@ async function fetchAndProcessData( date, time, place ) {
             //console.log(data);
 
             // Find data parameters
-            let dataParameterNameArray = [
+            let dataParameterArray = [
                 "Wsymb2",
                 "t",
                 "pmedian",
                 "r",
                 "ws",
                 "wd"]
+                
+            const  newCell = document.createElement("td");
+            newCell.textContent = data["validTime"];
+            newRow.appendChild(newCell);
 
-            for (let dataParameter = 0; dataParameter < data.parameters.length; dataParameter++) {
+            // HEre
+            let filteredData = dataParameterArray.map(parameter => {
+                let matchingObject = data["parameters"].find(obj => obj.name === parameter);
+                
+                const newCell = document.createElement("td");
+                
+                unit = matchingObject ? matchingObject.unit : null,
+                value = matchingObject ? matchingObject.values : null
+                
+                newCell.textContent = `${value} ${unit}`;
+                newRow.appendChild(newCell);
+            });
+            console.log(filteredData);
+                
 
-                // Compare the parameter name to array
-                for (let parameterName = 0; parameterName < dataParameterNameArray.length; parameterName++) {
-
-                    // Save if found matching name
-                    if (data.parameters[dataParameter].name == dataParameterNameArray[parameterName]) {
-                        //console.log(dataParameterNameArray[parameterName] + " " + data.parameters[dataParameter].values[0] + " " + data.parameters[dataParameter].unit);
-                        let parameterValue = data.parameters[dataParameter].values[0];
-                        let parameterUnit = data.parameters[dataParameter].unit;
-                        let parameterCellClass = dataParameterNameArray[parameterName];
-                        
-                        // TODO Do this for each of the parameters above
-                        // Update the corresponding table cell with the fetched data
-                        
-                    }
-                }
-            }
+            console.log(123);
             // Add new row
             tableBody.appendChild(newRow);
 
