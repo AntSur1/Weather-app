@@ -5,12 +5,14 @@
 
 
 // url data
-let rqLon = 18.3;
+let rqLon = 18.7;
 let rqLat = 59.8;
 let rqPlace = [rqLon, rqLat]
 
 const dateToday = new Date(); 
-let dateObj = new Date(); 
+let dateObj = new Date();
+
+console.log(dateObj);
 
 
 // Sets the week buttons
@@ -85,6 +87,10 @@ async function fetchAndProcessData( _place, _time) {
         let urlData = await fetchData(apiUrl); 
         //console.log(urlData);
 
+        let clock = `${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+
+        document.getElementById("table-date").innerHTML = `${_time} | ${clock}`;
+
         const tableBody = document.getElementById("weather-table");
 
         // Fectch data
@@ -138,5 +144,4 @@ let validTime = formatTime();
 console.log("validTime:", validTime);
 
 setButtons();
-
 fetchAndProcessData( rqPlace, validTime );

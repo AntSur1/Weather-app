@@ -12,40 +12,39 @@
   <body>
     <main>
       <h1>Weather</h1>
+      <!-- Week buttons -->
+      <div id="day-buttons">
+        <button id="day-0">   Today  </button>
+        <button id="day-1">   Tmrw.  </button>
+        <button id="day-2">          </button>
+        <button id="day-3">          </button>
+        <button id="day-4">          </button>
+        <button id="day-5">          </button>
+        <button id="day-6">          </button>
+      </div>
+      <br><br>
 
-        <!-- Data table -->
-          <table>
-            <!-- Head -->
-            <thead>
-              <tr>
-                <th>  Time          </th>
-                <th>  Icon          </th>
-                <th>  Temperature   </th>
-                <th>  Perticipation </th>
-                <th>  Humidity      </th>
-                <th>  Wind speed    </th>
-                <th>  Wind dir.     </th>
-              </tr>
+      <h2 id="table-date" style="text-align: center;">Time</h2>
+      <!-- Data table -->
+        <table>
+          <!-- Head -->
+          <thead>
+            <tr>
+              <th>  Time          </th>
+              <th>  Icon          </th>
+              <th>  Temperature   </th>
+              <th>  Perticipation </th>
+              <th>  Humidity      </th>
+              <th>  Wind speed    </th>
+              <th>  Wind dir.     </th>
+            </tr>
 
-              <!-- Items-->
-            <tbody id="weather-table">
+            <!-- Items-->
+          <tbody id="weather-table">
 
-            </tbody>
-          </table>
-
-        <br>
-        
-        <!-- Week buttons -->
-        <div id="day-buttons">
-          <button id="day-0">   Today  </button>
-          <button id="day-1">   Tmrw.  </button>
-          <button id="day-2">          </button>
-          <button id="day-3">          </button>
-          <button id="day-4">          </button>
-          <button id="day-5">          </button>
-          <button id="day-6">          </button>
-        </div>
-
+          </tbody>
+        </table>
+      <br><br>
     </main>
 	<script src="index.js"></script>
   </body>
