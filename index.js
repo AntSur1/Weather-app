@@ -6,7 +6,7 @@
 
 // url data
 let rqDate;
-let rqTime = 18;
+let rqTime;
 let rqLon = 18.3;
 let rqLat = 59.8;
 let rqPlace = [rqLon, rqLat]
@@ -14,7 +14,7 @@ let rqPlace = [rqLon, rqLat]
 const dateToday = new Date(); 
 let dateObj = new Date(); 
 
-rqTime == undefined ? (dateObj.getHours() + 1) % 24 : rqTime;
+rqTime = (dateObj.getHours() + 1) % 24;
 rqDate = dateObj.toLocaleDateString();
 
 const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -33,13 +33,37 @@ function setButtons() {
         indexOfStartDay = (indexOfStartDay + 1) % weekday.length;
 
         button.addEventListener("click", () => {
-            
+            // Button js
             dateObj.setDate(dateToday.getDate() + buttonNr);
             rqDate = dateObj.toLocaleDateString();
+            rqDate.replace("/", "-" )
+
+            console.log("button:", rqDate);
             
-            fetchAndProcessData( rqDate, rqTime, rqPlace );
+            fetchAndProcessData( rqPlace );
+
         });
     }
+}
+
+
+// Formats current time to DD-MM-YYYYThh:00:00Z
+function formatTime( day =  month = year = undefined) {
+    if (day == undefined) {
+        day = dateObj.getDate() <= 9 ? `0${dateObj.getDate()}` : dateObj.getDate();
+    }
+    
+    if (month == undefined) {
+        month = dateObj.getMonth() + 1 <= 9 ? `0${dateObj.getMonth() + 1}` : dateObj.getMonth() + 1;
+    }
+    
+    if (year == undefined) {
+        year = dateObj.getFullYear();
+    } 
+
+    let formattedDateTime = `${year}-${month}-${day}T${rqTime}:00:00Z`;
+
+    return formattedDateTime;
 }
 
 
@@ -58,153 +82,55 @@ async function fetchData(apiUrl) {
 }
 
 
-// Formats current time to DD-MM-YYYYThh:00:00
-function formatTime() {
-    let requestDay = dateObj.getDate() <= 9 ? `0${dateObj.getDate()}` : dateObj.getDate();
-    let requestMonth = dateObj.getMonth() + 1 <= 9 ? `0${dateObj.getMonth() + 1}` : dateObj.getMonth() + 1;
-    let requestYear = dateObj.getFullYear();
-
-    let formattedDateTime = `${requestYear}-${requestMonth}-${requestDay}T${rqTime}:00:00Z`;
-
-    return formattedDateTime;
-}
-
-
 // Fetches and processes api data
-async function fetchAndProcessData( date, time, place ) {
+async function fetchAndProcessData( place ) {
     try {
-        // Set the "Date Time Place" text here before fetching the data
-        let dateTimePlace = `${date} | ${time}:00 | ${place[0]}°N, ${place[1]}°N`;
-        document.getElementById('dateTimePlace').textContent = dateTimePlace;
-
         // url
         let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${place[0]}/lat/${place[1]}/data.json`;
 
         let urlData = await fetchData(apiUrl); 
-        let validTime = formatTime();
-        console.log(validTime);
         console.log(urlData);
 
         const tableBody = document.getElementById("weatherTable");
 
         // Fectch data
         for (let timeSerie = 0; timeSerie < urlData.timeSeries.length; timeSerie++) {
-            
-            let data = urlData.timeSeries[timeSerie];
-            console.log(data);
+                let data = urlData.timeSeries[timeSerie];
 
-            const newRow = document.createElement("tr");
+                if ( data["validTime"].includes(validTime.slice(0, 10)) ) {
 
-            
-            //START
-            //START
-
-            //console.log(data);
-
-            // Find data parameters
-            let dataParameterArray = [
-                "Wsymb2",
-                "t",
-                "pmedian",
-                "r",
-                "ws",
-                "wd"]
-                
-            const  newCell = document.createElement("td");
-            newCell.textContent = data["validTime"];
-            newRow.appendChild(newCell);
-
-            // HEre
-            let filteredData = dataParameterArray.map(parameter => {
-                let matchingObject = data["parameters"].find(obj => obj.name === parameter);
-                
-                const newCell = document.createElement("td");
-                
-                unit = matchingObject ? matchingObject.unit : null,
-                value = matchingObject ? matchingObject.values : null
-                
-                newCell.textContent = `${value} ${unit}`;
-                newRow.appendChild(newCell);
-            });
-            console.log(filteredData);
-                
-
-            console.log(123);
-            // Add new row
-            tableBody.appendChild(newRow);
-
-            //STOP
-            //STOP
-
-            
-        }
-
-    } 
-    catch (error) {
-        
-        console.error('Error with Promise:', error);
-    }
-}
-
-async function fetchAndProcessData1( date, time, place ) {
-    try {
-        // Set the "Date Time Place" text here before fetching the data
-        let dateTimePlace = `${date} | ${time}:00 | ${place[0]}°N, ${place[1]}°N`;
-        document.getElementById('dateTimePlace').textContent = dateTimePlace;
-
-        // url
-        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${place[0]}/lat/${place[1]}/data.json`;
-
-        let urlData = await fetchData(apiUrl); 
-        let validTime = formatTime();
-        console.log(validTime);
-        console.log(urlData);
-
-        // Fectch data
-        for (let i = 0; i < urlData.timeSeries.length; i++) {
-
-            // Find validTime data (right day and time)
-            if (urlData.timeSeries[i].validTime == validTime) {
-                let data = urlData.timeSeries[i];
-                //console.log(data);
+                const newRow = document.createElement("tr");
 
                 // Find data parameters
-                let dataParameterNameArray = [
+                let dataParameterArray = [
                     "Wsymb2",
                     "t",
                     "pmedian",
                     "r",
                     "ws",
                     "wd"]
+                    
+                const newCell = document.createElement("td");
+                newCell.textContent = data["validTime"];
+                newRow.appendChild(newCell);
 
-                for (let dataParameter = 0; dataParameter < data.parameters.length; dataParameter++) {
+                // Filter data
+                dataParameterArray.map(parameter => {
+                    let matchingObject = data["parameters"].find(obj => obj.name === parameter);
+                    
+                    const newCell = document.createElement("td");
+                    
+                    unit = matchingObject ? matchingObject.unit : null,
+                    value = matchingObject ? matchingObject.values : null
+                    
+                    newCell.textContent = `${value} ${unit}`;
+                    newRow.appendChild(newCell);
+                });
 
-                    // Compare the parameter name to array
-                    for (let parameterName = 0; parameterName < dataParameterNameArray.length; parameterName++) {
-
-                        // Save if found matching name
-                        if (data.parameters[dataParameter].name == dataParameterNameArray[parameterName]) {
-                            //console.log(dataParameterNameArray[parameterName] + " " + data.parameters[dataParameter].values[0] + " " + data.parameters[dataParameter].unit);
-                            let parameterValue = data.parameters[dataParameter].values[0];
-                            let parameterUnit = data.parameters[dataParameter].unit;
-                            let parameterCellClass = dataParameterNameArray[parameterName];
-                  
-                            // Update the corresponding table cell with the fetched data
-                            document.getElementById(parameterCellClass).textContent = parameterValue + " " + parameterUnit;
-                        }
-                    }
-                }
-
-
-                break;
-            }
-            /*
-            else {
-                console.error("Error: validTime not found");
-            }
-            */
+                // Add new row
+                tableBody.appendChild(newRow);        
+            }    
         }
-
     } 
     catch (error) {
         
@@ -212,6 +138,10 @@ async function fetchAndProcessData1( date, time, place ) {
     }
 }
 
+
+let validTime = formatTime();
+console.log("validTime:", validTime);
+
 setButtons();
 
-fetchAndProcessData( rqDate, rqTime, rqPlace );
+fetchAndProcessData( rqPlace );
