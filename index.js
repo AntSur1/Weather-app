@@ -5,8 +5,6 @@
 
 
 // url data
-let rqDate;
-let rqTime;
 let rqLon = 18.3;
 let rqLat = 59.8;
 let rqPlace = [rqLon, rqLat]
@@ -14,13 +12,11 @@ let rqPlace = [rqLon, rqLat]
 const dateToday = new Date(); 
 let dateObj = new Date(); 
 
-rqTime = (dateObj.getHours() + 1) % 24;
-rqDate = dateObj.toLocaleDateString();
 
-const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-
+// Sets the week buttons
 function setButtons() {
+    const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
     let startDay = weekday[dateObj.getDay()];
 
     let indexOfStartDay = weekday.findIndex(item => item === startDay);
@@ -32,36 +28,33 @@ function setButtons() {
 
         indexOfStartDay = (indexOfStartDay + 1) % weekday.length;
 
+        // Button js
         button.addEventListener("click", () => {
-            // Button js
-            dateObj.setDate(dateToday.getDate() + buttonNr);
-            rqDate = dateObj.toLocaleDateString();
-            rqDate.replace("/", "-" )
+            // Format new date array to API friendly format
+            rqDate = formatTime( buttonNr );
+            console.log(rqDate);
 
-            console.log("button:", rqDate);
-            
-            fetchAndProcessData( rqPlace );
+            // Clear table
+            const tableBody = document.getElementById("weather-table");
+            tableBody.innerHTML = "";
 
+            // Request new data
+            fetchAndProcessData( rqPlace , rqDate);
         });
     }
 }
 
 
-// Formats current time to DD-MM-YYYYThh:00:00Z
-function formatTime( day =  month = year = undefined) {
-    if (day == undefined) {
-        day = dateObj.getDate() <= 9 ? `0${dateObj.getDate()}` : dateObj.getDate();
-    }
+// Formats time string to YYYY-MM-DD
+function formatTime( extraDays = 0 ) {
     
-    if (month == undefined) {
-        month = dateObj.getMonth() + 1 <= 9 ? `0${dateObj.getMonth() + 1}` : dateObj.getMonth() + 1;
-    }
+    let day = String(dateObj.getDate() + extraDays).padStart(2, '0');   
     
-    if (year == undefined) {
-        year = dateObj.getFullYear();
-    } 
+    let month = String(dateObj.getMonth() + 1).padStart(2, '0');   
+    
+    let year = dateObj.getFullYear();
 
-    let formattedDateTime = `${year}-${month}-${day}T${rqTime}:00:00Z`;
+    let formattedDateTime = `${year}-${month}-${day}`;
 
     return formattedDateTime;
 }
@@ -83,52 +76,54 @@ async function fetchData(apiUrl) {
 
 
 // Fetches and processes api data
-async function fetchAndProcessData( place ) {
+async function fetchAndProcessData( _place, _time) {
+    //! OBS _time needs to be in the YYYY-MM-DD format
     try {
         // url
-        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${place[0]}/lat/${place[1]}/data.json`;
+        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${_place[0]}/lat/${_place[1]}/data.json`;
 
         let urlData = await fetchData(apiUrl); 
-        console.log(urlData);
+        //console.log(urlData);
 
-        const tableBody = document.getElementById("weatherTable");
+        const tableBody = document.getElementById("weather-table");
 
         // Fectch data
         for (let timeSerie = 0; timeSerie < urlData.timeSeries.length; timeSerie++) {
                 let data = urlData.timeSeries[timeSerie];
 
-                if ( data["validTime"].includes(validTime.slice(0, 10)) ) {
+                if ( data["validTime"].includes(_time.slice(0, 10)) ) {
 
-                const newRow = document.createElement("tr");
+                    const newRow = document.createElement("tr");
+                    newRow.classList.add("api-data");
 
-                // Find data parameters
-                let dataParameterArray = [
-                    "Wsymb2",
-                    "t",
-                    "pmedian",
-                    "r",
-                    "ws",
-                    "wd"]
-                    
-                const newCell = document.createElement("td");
-                newCell.textContent = data["validTime"];
-                newRow.appendChild(newCell);
-
-                // Filter data
-                dataParameterArray.map(parameter => {
-                    let matchingObject = data["parameters"].find(obj => obj.name === parameter);
-                    
+                    // Find data parameters
+                    let dataParameterArray = [
+                        "Wsymb2",
+                        "t",
+                        "pmedian",
+                        "r",
+                        "ws",
+                        "wd"]
+                        
                     const newCell = document.createElement("td");
-                    
-                    unit = matchingObject ? matchingObject.unit : null,
-                    value = matchingObject ? matchingObject.values : null
-                    
-                    newCell.textContent = `${value} ${unit}`;
+                    newCell.textContent = data["validTime"];
                     newRow.appendChild(newCell);
-                });
 
-                // Add new row
-                tableBody.appendChild(newRow);        
+                    // Filter data
+                    dataParameterArray.map(parameter => {
+                        let matchingObject = data["parameters"].find(obj => obj.name === parameter);
+                        
+                        const newCell = document.createElement("td");
+                        
+                        unit = matchingObject ? matchingObject.unit : null,
+                        value = matchingObject ? matchingObject.values : null
+                        
+                        newCell.textContent = `${value} ${unit}`;
+                        newRow.appendChild(newCell);
+                    });
+
+                    // Add new row
+                    tableBody.appendChild(newRow);        
             }    
         }
     } 
@@ -144,4 +139,4 @@ console.log("validTime:", validTime);
 
 setButtons();
 
-fetchAndProcessData( rqPlace );
+fetchAndProcessData( rqPlace, validTime );
