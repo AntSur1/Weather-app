@@ -3,7 +3,7 @@
 // API url https://opendata.smhi.se/apidocs/metfcst/parameters.html
 /**
  * //TODO: modulate fetchAndProcessData
- * TODO: Fix var names
+ * //TODO: Fix var names
  * TODO: Add icons
  * TODO: Add arrows
  * TODO: Error handling -- show it to user
@@ -11,53 +11,54 @@
  */
 
 // Define the longitude and latitude for the requested place
-let rqLon = 18.7;
-let rqLat = 59.8;
-let rqPlace = [rqLon, rqLat]
+let requestedLon = 18.7;
+let requestedLat = 59.8;
+let requestedCoordinates = [requestedLon, requestedLat]
 
 
 // Function to set up the week buttons for different days
 function setButtons() {
-    const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const weekdayArray = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const dateToday = new Date();
 
     // Find the start day's index
-    let startDay = weekday[dateToday.getDay()];
-    let indexOfStartDay = weekday.findIndex(item => item === startDay);
+    let startDay = weekdayArray[dateToday.getDay()];
+    let indexOfStartDay = weekdayArray.findIndex(item => item === startDay);
 
     // Replace button texts with correct days
-    for (let buttonNr = 0; buttonNr < 7; buttonNr++) {
-        let button = document.getElementById(`day-${buttonNr}`);
-        button.textContent += weekday[indexOfStartDay];
+    for (let buttonNr = 0; buttonNr < weekdayArray.length; buttonNr++) {
+        const button = document.getElementById(`day-${buttonNr}`);
+        button.textContent += weekdayArray[indexOfStartDay];
 
-        indexOfStartDay = (indexOfStartDay + 1) % weekday.length;
+        indexOfStartDay = (indexOfStartDay + 1) % weekdayArray.length;
 
         // Add a click event listener to each button
         button.addEventListener("click", () => {
             let rqDate = formatTime(buttonNr);      // Format the selected date
             const tableBody = document.getElementById("weather-table");
             tableBody.innerHTML = "";       // Clear the weather table
-            fetchAndProcessData(rqPlace, rqDate);   // Fetch and process data for the selected date
+
+            fetchAndProcessData(requestedCoordinates, rqDate);   // Fetch and process data for the selected date
         });
     }
 }
 
 // Function to format time string to YYYY-MM-DD
-function formatTime(_extraDays = 0) {
+function formatTime(dayOffset = 0) {
     const singleDayTimestamp = 86400000;    // Ammount of miliseconds in one day
-    let newDateTimestamp = Date.now() + singleDayTimestamp * _extraDays;
+    let newDateTimestamp = Date.now() + singleDayTimestamp * dayOffset;
     let ISODateTime = new Date(newDateTimestamp).toISOString().slice(0, 10);
     return ISODateTime;
 }
 
 
 // Update table time header
-function updateTableHeader(date) {
+function updateTableHeader(displayDate) {
     const dateToday = new Date();
     let clockHours = dateToday.getHours();
     let clockMinutes = String(dateToday.getMinutes()).padStart(2, '0');
     let clock = `${clockHours}:${clockMinutes}`;
-    document.getElementById("table-date").innerHTML = `${date} | ${clock}`;
+    document.getElementById("table-date").innerHTML = `${displayDate} | ${clock}`;
 }
 
 
@@ -75,15 +76,15 @@ async function fetchData(apiUrl) {
 
 
 // Create new cell
-function createTableCell(content) {
+function createTableCell(cellContent) {
     const newCell = document.createElement("td");
-    newCell.textContent = content;
+    newCell.textContent = cellContent;
     return newCell;
 }
 
 
 // Create new row from data in table
-function createTableRowFromData(data) {
+function createTableRowFromData(APIData) {
     // Create row
     const newRow = document.createElement("tr");
     newRow.classList.add("api-data");
@@ -92,8 +93,8 @@ function createTableRowFromData(data) {
     let cellContent;
 
     // Error handling
-    if (data.validTime) {
-        cellContent = data.validTime;
+    if (APIData.validTime) {
+        cellContent = APIData.validTime;
     }
     else {
         cellContent = "No data";
@@ -113,7 +114,7 @@ function createTableRowFromData(data) {
 
     // Filter and add sought after dataParameterArray to row data
     dataParameterArray.map(parameter => {
-        let matchingObject = data["parameters"].find(obj => obj.name === parameter);
+        let matchingObject = APIData["parameters"].find(obj => obj.name === parameter);
 
         let cellContent;
 
@@ -135,14 +136,14 @@ function createTableRowFromData(data) {
 
 
 // Update table
-function updateTable(urlData, _date) {
+function updateTable(urlData, validTimeDate) {
     // Process data and populate the weather table
     for (let timeSerie = 0; timeSerie < urlData.timeSeries.length; timeSerie++) {
-        let data = urlData.timeSeries[timeSerie];
+        let dataSubset = urlData.timeSeries[timeSerie];
 
-        if (data["validTime"].includes(_date.slice(0, 10))) {
+        if (dataSubset["validTime"].includes(validTimeDate.slice(0, 10))) {
 
-            let newRow = createTableRowFromData(data);
+            let newRow = createTableRowFromData(dataSubset);
 
             // Add new row to the weather table
             document.getElementById("weather-table").appendChild(newRow);
@@ -150,18 +151,19 @@ function updateTable(urlData, _date) {
     }
 }
 
+
 // Function to fetch and process API data
-async function fetchAndProcessData(_place, _date) {
+async function fetchAndProcessData(coords, validTimeDate) {
     try {
-        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${_place[0]}/lat/${_place[1]}/data.json`;
+        let apiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${coords[0]}/lat/${coords[1]}/data.json`;
         let urlData = await fetchData(apiUrl);
 
-        updateTableHeader(_date);
+        updateTableHeader(validTimeDate);
 
         const tableBody = document.getElementById("weather-table");
 
         // Process data and populate the weather table
-        updateTable(urlData, _date);
+        updateTable(urlData, validTimeDate);
 
     } catch (error) {
         console.error('Error with Promise:', error);
@@ -173,4 +175,4 @@ let validTime = formatTime();
 
 // Initialize the buttons and fetch data for the initial validTime
 setButtons();
-fetchAndProcessData(rqPlace, validTime);
+fetchAndProcessData(requestedCoordinates, validTime);
