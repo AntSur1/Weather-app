@@ -34,7 +34,6 @@ function setButtons() {
         button.addEventListener("click", () => {
             // Format new date array to API friendly format
             rqDate = formatTime( buttonNr );
-            console.log(rqDate);
 
             // Clear table
             const tableBody = document.getElementById("weather-table");
@@ -48,17 +47,17 @@ function setButtons() {
 
 
 // Formats time string to YYYY-MM-DD
-function formatTime( extraDays = 0 ) {
-    
-    let day = String(dateObj.getDate() + extraDays).padStart(2, '0');   
-    
-    let month = String(dateObj.getMonth() + 1).padStart(2, '0');   
-    
-    let year = dateObj.getFullYear();
+function formatTime( _extraDays = 0 ) {
+    const singleDayTimestamp = 86400000;
 
-    let formattedDateTime = `${year}-${month}-${day}`;
+    let newDateTimestamp = Date.now() + singleDayTimestamp * _extraDays;
+    console.log("newDateTimestamp:",newDateTimestamp);
 
-    return formattedDateTime;
+    let ISODateTime = new Date(newDateTimestamp).toISOString().slice(0, 10);
+    console.log("ISODateTime:",ISODateTime);
+
+
+    return ISODateTime;
 }
 
 
@@ -87,7 +86,9 @@ async function fetchAndProcessData( _place, _time) {
         let urlData = await fetchData(apiUrl); 
         //console.log(urlData);
 
-        let clock = `${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+        let clockHours = dateObj.getHours();
+        let clockMinuntes = String(dateObj.getMinutes()).padStart(2, '0');
+        let clock = `${clockHours}:${clockMinuntes}`;
 
         document.getElementById("table-date").innerHTML = `${_time} | ${clock}`;
 
@@ -141,7 +142,6 @@ async function fetchAndProcessData( _place, _time) {
 
 
 let validTime = formatTime();
-console.log("validTime:", validTime);
 
 setButtons();
 fetchAndProcessData( rqPlace, validTime );
