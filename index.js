@@ -8,7 +8,7 @@
  * TODO: Add arrows
  * TODO: Error handling -- show it to user
  * TODO: Unit Testing?
- * TODO: 
+ * TODO: alt text
  */
 
 // Define the longitude and latitude for the requested place
@@ -79,7 +79,7 @@ async function fetchData(apiUrl) {
 // Create new cell
 function createTableCell(cellContent) {
     const newCell = document.createElement("td");
-    newCell.textContent = cellContent;
+    newCell.innerHTML = cellContent;
     return newCell;
 }
 
@@ -104,31 +104,44 @@ function createTableRowFromData(APIData) {
     const newCell = createTableCell(cellContent);
     newRow.appendChild(newCell);
 
-    let dataParameterArray = [
-        "Wsymb2",
-        "t",
-        "pmedian",
-        "r",
-        "ws",
-        "wd"
+    let parameterInfo = [
+        { parameter: "Wsymb2",   unit: "N/A"},
+        { parameter: "t",        unit: "C°"     },
+        { parameter: "pmedian",  unit: "mm"     },
+        { parameter: "r",        unit: "%"      },
+        { parameter: "ws",       unit: "m/s"    },
+        { parameter: "wd",       unit: "N/A"  }
     ];
 
-    // Filter and add sought after dataParameterArray to row data
-    dataParameterArray.map(parameter => {
+    // Filter and add sought after parameterInfo to row data
+    parameterInfo.forEach(paramInfo => {
+        let parameter = paramInfo.parameter;
         let matchingObject = APIData["parameters"].find(obj => obj.name === parameter);
 
         let cellContent;
 
-        // Error handling
         if (matchingObject) {
-            cellContent = `${matchingObject.values} ${matchingObject.unit}`;
-        }
+            if (parameter == "wd") {
+                let imageSrc = "resources/arrow.svg";
+                let label = "Arrow";
+                let imgClass = "arrow";
+                let rotateDeg = matchingObject.values[0];
+                cellContent = `<img src="${imageSrc}" alt="${label}" class="${imgClass}" style="-webkit-transform: rotateZ(${rotateDeg}deg); -ms-transform: rotateZ(${rotateDeg}deg); transform: rotateZ(${rotateDeg}deg);"/>`;
+            } 
+            else {
+                let value = matchingObject.values[0];
+                let unit = paramInfo.unit;
+    
+                cellContent = `${value} ${unit}`;
+                
+            }
+        } 
+
         else {
             cellContent = "No data";
         }
 
         const newCell = createTableCell(cellContent);
-        
         newRow.appendChild(newCell);
     });
 
