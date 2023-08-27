@@ -1,6 +1,8 @@
 // UI Ex https://dribbble.com/shots/19113627-Weather-Dashboard
 // UI Ex https://www.google.com/search?client=firefox-b-d&q=weather+runbi
 // API url https://opendata.smhi.se/apidocs/metfcst/parameters.html
+// ICONS TEMPORARILY TAKEN FROM https://www.smhi.se/kunskapsbanken/meteorologi/vaderprognoser/vad-betyder-smhis-vadersymboler-1.12109 
+
 /**
  * //TODO: modulate fetchAndProcessData
  * //TODO: Fix var names
@@ -11,6 +13,7 @@
  * TODO: alt text
  */
 
+console.log("ICONS TEMPORARILY TAKEN FROM https://www.smhi.se/kunskapsbanken/meteorologi/vaderprognoser/vad-betyder-smhis-vadersymboler-1.12109");
 // Define the longitude and latitude for the requested place
 let requestedLon = 18.7;
 let requestedLat = 59.8;
@@ -43,6 +46,7 @@ function setButtons() {
         });
     }
 }
+
 
 // Function to format time string to YYYY-MM-DD
 function formatTime(dayOffset = 0) {
@@ -84,63 +88,132 @@ function createTableCell(cellContent) {
 }
 
 
+// Create the weather icon
+function createWeatherIcon(imgNr) {
+    let iconAlt = [
+        "Clear sky",
+        "Nearly clear sky",
+        "Variable cloudiness",
+        "Halfclear sky",
+        "Cloudy sky",
+        "Overcast",
+        "Fog",
+        "Light rain showers",
+        "Moderate rain showers",
+        "Heavy rain showers",
+        "Thunderstorm",
+        "Light sleet showers",
+        "Moderate sleet showers",
+        "Heavy sleet showers",
+        "Light snow showers",
+        "Moderate snow showers",
+        "Heavy snow showers",
+        "Light rain",
+        "Moderate rain",
+        "Heavy rain",
+        "Thunder",
+        "Light sleet",
+        "Moderate sleet",
+        "Heavy sleet",
+        "Light snowfall",
+        "Moderate snowfall",
+        "Heavy snowfall"
+    ]
+
+    let imageSrc = `resources/${imgNr}.png`;
+    let label = iconAlt[imgNr];
+    let imgClass = "weather-icon";
+    
+    return `<img src="${imageSrc}" alt="${label}" class="${imgClass}"/>`;
+}
+
+
+// Create the wind dir arrow
+function createWindArrow(rotateDeg) {
+    let imageSrc = "resources/arrow.svg";
+    let label = `Arrow ${rotateDeg} degrees`;
+    let imgClass = "arrow";
+    
+    return `<img src="${imageSrc}" alt="${label}" class="${imgClass}" style="-webkit-transform: rotateZ(${rotateDeg}deg); -ms-transform: rotateZ(${rotateDeg}deg); transform: rotateZ(${rotateDeg}deg);"/>`;
+}
+
+
+// Add a decimal if the number doesn't already have one
+function addDecimalIfNeeded(number) {
+    const numberStr = number.toString();
+    return numberStr.includes('.') ? numberStr : numberStr + '.0';
+}
+
+
 // Create new row from data in table
 function createTableRowFromData(APIData) {
-    // Create row
+    // Create new row
     const newRow = document.createElement("tr");
     newRow.classList.add("api-data");
 
     // Add time to row data
     let cellContent;
 
-    // Error handling
+    // Handle the case where validTime is missing
     if (APIData.validTime) {
-        cellContent = APIData.validTime;
+        cellContent = APIData.validTime.slice(11,16);
     }
     else {
         cellContent = "No data";
     }
 
+    // Create a new cell with the time data and append it to the row
     const newCell = createTableCell(cellContent);
     newRow.appendChild(newCell);
 
+    // Define information about parameters and their units
     let parameterInfo = [
-        { parameter: "Wsymb2",   unit: "N/A"},
-        { parameter: "t",        unit: "C°"     },
-        { parameter: "pmedian",  unit: "mm"     },
-        { parameter: "r",        unit: "%"      },
-        { parameter: "ws",       unit: "m/s"    },
-        { parameter: "wd",       unit: "N/A"  }
+        { parameter: "Wsymb2",   unit: "N/A" },
+        { parameter: "t",        unit: "C°"  },
+        { parameter: "pmedian",  unit: "mm"  },
+        { parameter: "r",        unit: "%"   },
+        { parameter: "ws",       unit: "m/s" },
+        { parameter: "wd",       unit: "N/A" }
     ];
 
-    // Filter and add sought after parameterInfo to row data
-    parameterInfo.forEach(paramInfo => {
-        let parameter = paramInfo.parameter;
+    // Process each parameter's data
+    parameterInfo.forEach(data => {
+        let parameter = data.parameter;
         let matchingObject = APIData["parameters"].find(obj => obj.name === parameter);
-
         let cellContent;
 
+        // Check if matchingObject exists for the parameter
         if (matchingObject) {
-            if (parameter == "wd") {
-                let imageSrc = "resources/arrow.svg";
-                let label = "Arrow";
-                let imgClass = "arrow";
+            // Create content based on parameter type
+            if (parameter == "Wsymb2") {
+                let imgNr = matchingObject.values[0];
+                cellContent = createWeatherIcon(imgNr);
+            }
+
+            else if (parameter == "wd") {
                 let rotateDeg = matchingObject.values[0];
-                cellContent = `<img src="${imageSrc}" alt="${label}" class="${imgClass}" style="-webkit-transform: rotateZ(${rotateDeg}deg); -ms-transform: rotateZ(${rotateDeg}deg); transform: rotateZ(${rotateDeg}deg);"/>`;
-            } 
+                cellContent = createWindArrow(rotateDeg);
+            }
+
             else {
                 let value = matchingObject.values[0];
-                let unit = paramInfo.unit;
+                
+                if (["t", "pmedian", "ws"].includes(parameter)) {
+                    value = addDecimalIfNeeded(value);
+                }
+
+                let unit = data.unit;
     
                 cellContent = `${value} ${unit}`;
-                
             }
         } 
 
+        // Handle missing data
         else {
             cellContent = "No data";
         }
 
+        // Create and append new cell with the processed content to new row
         const newCell = createTableCell(cellContent);
         newRow.appendChild(newCell);
     });
