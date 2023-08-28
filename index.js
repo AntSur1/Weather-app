@@ -1,8 +1,13 @@
 // UI Ex https://dribbble.com/shots/19113627-Weather-Dashboard
-// UI Ex https://www.google.com/search?client=firefox-b-d&q=weather+runbi
-// API url https://opendata.smhi.se/apidocs/metfcst/parameters.html
-// ICONS TEMPORARILY TAKEN FROM https://www.smhi.se/kunskapsbanken/meteorologi/vaderprognoser/vad-betyder-smhis-vadersymboler-1.12109 
+// UI Ex https://www.google.com/search?client=firefox-b-d&q=weather+rimbo 
+// UI Ex https://smarthomescene.com/blog/top-10-home-assistant-weather-cards/ 
 
+// API url https://opendata.smhi.se/apidocs/metfcst/parameters.html
+
+// SOME ICONS TEMPORARILY TAKEN FROM https://www.smhi.se/kunskapsbanken/meteorologi/vaderprognoser/vad-betyder-smhis-vadersymboler-1.12109 
+
+// https://developers.google.com/s/results/maps?q=coordinates&text=coordinates
+// https://github.com/sphrak/svenska-stader
 /**
  * //TODO: modulate fetchAndProcessData
  * //TODO: Fix var names
@@ -13,12 +18,17 @@
  * TODO: alt text
  */
 
-console.log("ICONS TEMPORARILY TAKEN FROM https://www.smhi.se/kunskapsbanken/meteorologi/vaderprognoser/vad-betyder-smhis-vadersymboler-1.12109");
+// Disclaimer
+let disclaimerText = "SOME ICONS TEMPORARILY TAKEN FROM https://www.smhi.se/kunskapsbanken/meteorologi/vaderprognoser/vad-betyder-smhis-vadersymboler-1.12109"
+console.log(disclaimerText);
+
 // Define the longitude and latitude for the requested place
 let requestedLon = 18.7;
 let requestedLat = 59.8;
 let requestedCoordinates = [requestedLon, requestedLat]
+let requestedDate;
 
+const oneMinute = 60000;
 
 // Function to set up the week buttons for different days
 function setButtons() {
@@ -38,11 +48,11 @@ function setButtons() {
 
         // Add a click event listener to each button
         button.addEventListener("click", () => {
-            let rqDate = formatTime(buttonNr);      // Format the selected date
+            requestedDate = formatTime(buttonNr);      // Format the selected date
             const tableBody = document.getElementById("weather-table");
             tableBody.innerHTML = "";       // Clear the weather table
 
-            fetchAndProcessData(requestedCoordinates, rqDate);   // Fetch and process data for the selected date
+            fetchAndProcessData(requestedCoordinates, requestedDate);   // Fetch and process data for the selected date
         });
     }
 }
@@ -257,9 +267,15 @@ async function fetchAndProcessData(coords, validTimeDate) {
     }
 }
 
-// Format the current time
-let validTime = formatTime();
 
-// Initialize the buttons and fetch data for the initial validTime
+// Data that should update every minute
+function scheduleNewDateTime() {
+    requestedDate = formatTime();
+    fetchAndProcessData(requestedCoordinates, requestedDate);
+}
+
+
+// Initialize the buttons and start the update cycle
 setButtons();
-fetchAndProcessData(requestedCoordinates, validTime);
+
+setInterval(scheduleNewDateTime(), oneMinute);
