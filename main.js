@@ -11,7 +11,7 @@
 /**
  * ~~TODO: modulate fetchAndProcessData
  * ~~TODO: Fix var names
- * TODO: Add icons
+ * TODO: Add own icons
  * ~~TODO: Add arrows
  * TODO: Error handling -- show it to user
  * ~~TODO: Unit Testing?
@@ -19,7 +19,7 @@
  */
 
 // Disclaimer
-let disclaimerText = "SOME ICONS TEMPORARILY TAKEN FROM https://www.smhi.se/kunskapsbanken/meteorologi/vaderprognoser/vad-betyder-smhis-vadersymboler-1.12109"
+let disclaimerText = "Some icons temporarily taken from https://www.smhi.se/kunskapsbanken/meteorologi/vaderprognoser/vad-betyder-smhis-vadersymboler-1.12109"
 console.log(disclaimerText);
 
 // Define the longitude and latitude for the reqd place
