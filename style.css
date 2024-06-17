@@ -1,28 +1,70 @@
 body {
-    background-color: beige;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	background-color: rgb(224, 224, 200);
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	margin: 0;
 }
 
 table, th, td {
-    border: 1px solid black;
+	border: 1px solid black;
 }
 
 table {
-    margin-left:    auto;
-    margin-right:   auto;
-    width:  60%;
+	width:  60%;
 }
 
 td {
-    padding: 5px;
+	padding: 5px;
+}
+
+h1 {
+	text-align: center;
 }
 
 .weather-icon {
-    width:  30%;
-    height: 30%;
+	width:  80px;
 }
 
 .arrow {
-    width:  50px;
-    height: 50px;
+	width:  50px;
+	height: 50px;
 }
+
+#map { 
+	height: 720px;
+}
+
+
+.container {
+	background-color: beige;
+	display: flex;
+	flex-direction: column;
+	margin: 0; /* No margin by default */
+}
+
+.bottom {
+	flex-direction: row;
+}
+
+.left, .right {
+	flex: 1 1 100%; /* Full width by default */
+	padding: 10px;
+	box-sizing: border-box; /* Include padding in width calculation */
+}
+
+@media (min-width: 1400px) {
+	.container {
+		/* 1/6 margin on each side for PCs */
+		margin: 0 16.67%;
+	}
+	
+	.bottom {
+		background-color: beige;
+		display: flex;
+		flex-wrap: column;
+	}
+
+	.left, .right {
+		flex: 1 1 50%; /* Equal width on larger screens */
+	}
+}
+

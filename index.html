@@ -1,52 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>My Website</title>
-    <link rel="stylesheet" href="./style.css">
-    <link rel="icon" href="" type="">
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>AntSur1's Weather</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="" type="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
 
-  <body>
-    <main>
-      <h1>Weather</h1>
-      <!-- Week buttons -->
-      <div id="day-buttons">
-        <button id="day-0">   Today  </button>
-        <button id="day-1">   Tmrw.  </button>
-        <button id="day-2">          </button>
-        <button id="day-3">          </button>
-        <button id="day-4">          </button>
-        <button id="day-5">          </button>
-        <button id="day-6">          </button>
-      </div>
+<body>
+  
+  <div class="container">
 
-      <h2 id="table-date" style="text-align: center;">Time</h2>
-      <!-- Data table -->
-        <table>
-          <!-- Head -->
-          <thead>
-            <tr>
-              <th>  Time          </th>
-              <th>  Icon          </th>
-              <th>  Temperature   </th>
-              <th>  Perticipation </th>
-              <th>  Humidity      </th>
-              <th>  Wind speed    </th>
-              <th>  Wind dir.     </th>
-            </tr>
-
-            <!-- Items-->
-          <tbody id="weather-table">
-
-          </tbody>
-        </table>
+    <div class="top">
+      <h1>AntSur1's Weather</h1>
+    </div>
+    <div class="bottom">    
+      <!-- left -->
+      <div class="left">
+        <h2>Map</h2>
+        <p>Click anywhere <strong> within Baltoscandia </strong> (excluding Iceland) to display the weather.</p>
         
-      <br><br>
+        <!-- Map -->
+        <div id="map"></div>
+      </div>
+  
+      <!-- RIGHT -->
+      <div class="right">
+  
+        <!-- Time -->
+        <h2 id="table-date">Time</h2>
+  
+        <!-- Week buttons -->
+        <div id="day-buttons">
+          <button id="day-0">   Today  </button>
+          <button id="day-1">   Tmrw.  </button>
+          <button id="day-2">          </button>
+          <button id="day-3">          </button>
+          <button id="day-4">          </button>
+          <button id="day-5">          </button>
+          <button id="day-6">          </button>
+        </div>
+        <br>
+  
+        <!-- Data table -->
+        <table>
+          <tr>
+            <th>  Time          </th>
+            <th>  Icon          </th>
+            <th>  Temperature   </th>
+            <th>  Perticipation </th>
+            <th>  Humidity      </th>
+            <th>  Wind speed    </th>
+            <th>  Wind dir.     </th>
+          </tr>
+  
+          <tbody id="weather-table-body"></tbody>
+        </table>
+          
+        <br><br>
+      </div>
+    </div>
 
-    </main>
-	<script type="module" src="index.js"></script>
-  </body>
+  </div>
+
+  
+
+<script type="module" src="index.js"></script>
+</body>
 </html>
