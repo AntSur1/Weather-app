@@ -10,6 +10,8 @@ table, th, td {
 
 table {
 	width:  60%;
+	width: 100%;
+	max-width: 100%;
 }
 
 td {
@@ -31,6 +33,7 @@ h1 {
 
 #map { 
 	height: 720px;
+	max-width: 600px;
 }
 
 
